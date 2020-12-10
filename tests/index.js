@@ -13,6 +13,7 @@ const res = new Schema({
   status: Schema.integer(),
   data: Schema.array(Schema.nested(user)),
 });
+console.log(JSON.stringify(res.summary(), null, 2));
 
 const m = new Mocker(res);
 const o = { exlcudeOptional: true };

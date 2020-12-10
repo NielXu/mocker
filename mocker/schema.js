@@ -7,15 +7,51 @@ const BASIC_TYPES = [
 
 class Schema {
   constructor(schema) {
-    this.schema = schema;
+    this._schema = schema;
+    this._jsonify = {
+      nested: this._nestedAsJson.bind(this),
+      object: this._objectAsJson.bind(this),
+      array: this._arrayAsJson.bind(this),
+    };
   }
 
   getSchema() {
-    return this.schema;
+    return this._schema;
   }
 
-  asJson() {
-    return JSON.stringify(this.schema, null, 2);
+  summary() {
+    let result = {}
+    const keys = Object.keys(this._schema);
+    for(let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const val = this._schema[key];
+      if (BASIC_TYPES.includes(val.type)) {
+        result[key] = val.type;
+      } else {
+        result[key] = this._jsonify[val.type](val);
+      }
+    }
+    return result;
+  }
+
+  _objectAsJson(val) {
+    if (BASIC_TYPES.includes(val.value.type)) {
+      return { [val.key.type]: val.value.type };
+    } else {
+      return { [val.key.type]: this._jsonify[val.value.type](val.value) };
+    }
+  }
+
+  _nestedAsJson(val) {
+    return val.schema.summary();
+  }
+
+  _arrayAsJson(val) {
+    if (BASIC_TYPES.includes(val.inner.type)) {
+      return [val.inner.type];
+    } else {
+      return [ this._jsonify[val.inner.type](val.inner) ];
+    }
   }
 
   static string(required=true, min=1, max=9) {

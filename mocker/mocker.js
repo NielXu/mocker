@@ -1,4 +1,4 @@
-const { Generator } = require('./generator');
+const { Generator, DefaultGenerator } = require('./generator');
 
 /**
  * Instantiate Mocker class to create a new mocker for each schema.
@@ -12,10 +12,19 @@ class Mocker {
    * be based on this.
    * 
    * @param {Schema} schema The schema for the response
+   * @param {Generator} generator_clazz Implementation of Generator class
    */
-  constructor(schema) {
+  constructor(schema, generator_clazz=null) {
     this.schema = schema;
-    this.generator = new Generator(schema);
+    if (generator_clazz) {
+      if (generator_clazz.prototype instanceof Generator) {
+        this.generator = new generator_clazz(schema);
+      } else {
+        throw `Invalid generator type ${typeof generator_clazz.prototype}`;
+      }
+    } else {
+      this.generator = new DefaultGenerator(schema);
+    }
   }
 
   /**

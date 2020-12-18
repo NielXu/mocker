@@ -12,10 +12,59 @@ const user = new Schema({
   first_name: Schema.string(),
   last_name: Schema.string(),
   address: Schema.string(),
+  code: Schema.array(Schema.integer(false)),
 });
 
-let mocker = new Mocker(user);
-let response = mocker.response();
+const res = new Schema({
+  mapping: Schema.object(Schema.string(true, 1, 1), Schema.boolean()),
+  status: Schema.integer(),
+  data: Schema.array(Schema.nested(user)),
+});
+
+let mocker = new Mocker(res);
+let response = mocker.response({ exlcudeOptional: true });
+```
+
+The output will be:
+```javascript
+{
+  "mapping": {
+    "incididunt": true
+  },
+  "status": 7,
+  "data": [
+    {
+      "first_name": "proident officia adipisicing minim",
+      "last_name": "minim",
+      "address": "sunt ut sunt",
+      "code": []
+    },
+    {
+      "first_name": "labore quis amet",
+      "last_name": "nulla mollit occaecat nostrud minim laboris",
+      "address": "amet aute excepteur",
+      "code": []
+    },
+    {
+      "first_name": "do sunt ad",
+      "last_name": "aute ex laborum occaecat aute tempor nisi qui ipsum",
+      "address": "enim",
+      "code": []
+    },
+    {
+      "first_name": "deserunt pariatur aute esse quis",
+      "last_name": "dolore labore",
+      "address": "deserunt mollit exercitation",
+      "code": []
+    },
+    {
+      "first_name": "in nisi amet nulla sint",
+      "last_name": "nisi qui deserunt non",
+      "address": "excepteur proident in cillum non",
+      "code": []
+    }
+  ]
+}
 ```
 
 # Options
@@ -60,5 +109,49 @@ mocker.response({ option_name: option_value, ... });
   - `required=true`: Whether or not this field is required in the response
 
 
-# Custom Generator
-TODO: You can replace any of the generator.
+# Customization
+
+### Generator
+Generator will be used to generate the mock responses based on the schema types. `DefaultGenerator` is provided if no generator is specified.
+
+To use a custom generator, simply implement the `Generator` class:
+
+```javascript
+const { Generator, DefaultGenerator } = require('./generator');
+
+class CustomGenerator extends Generator {
+  constructor(schema) {
+    super(schema);
+  }
+  ...
+}
+
+or 
+
+class ExtendGenerator extends DefaultGenerator {
+  constructor(schema) {
+    super(schema);
+  }
+  ...
+}
+```
+
+There are some functions that need to be implemented if extending the `Generator` class since it is only an abstract class.
+
+- `generateInt`
+- `generateNum`
+- `generateBoolean`
+- `generateString`
+- `generateArray` 
+- `generateObject`
+- `generateNested`
+
+To apply a custom generator to the mocker:
+
+```javascript
+let mocker = new Mocker(schema, CustomGenerator);
+let response = mocker.response();
+```
+
+### Types
+TODO: Custom types
